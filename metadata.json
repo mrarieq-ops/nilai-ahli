@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Kualifikasi Tenaga Ahli",
+  "description": "Membantu Pokja Pemilihan untuk menilai Kualifikasi Tenaga Ahli jasa konsultansi konstruksi berdasarkan Dokumen Seleksi menggunakan AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
