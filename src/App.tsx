@@ -91,6 +91,7 @@ export default function App() {
       if (acceptedFiles[0]) {
         setSelectionDoc({ file: acceptedFiles[0], text: "" });
         setError(null);
+        setResult(null);
         console.log("Dokumen Seleksi terpilih:", acceptedFiles[0].name);
       }
     } catch (err) {
@@ -103,6 +104,7 @@ export default function App() {
       if (acceptedFiles[0]) {
         setKakDoc({ file: acceptedFiles[0], text: "" });
         setError(null);
+        setResult(null);
       }
     } catch (err) {
       setError("Gagal memilih file KAK.");
@@ -127,6 +129,7 @@ export default function App() {
 
         setQualificationDoc({ file, text: "" });
         setError(null);
+        setResult(null);
       }
     } catch (err) {
       setIsCheckingPageCount(false);
@@ -519,7 +522,7 @@ export default function App() {
     eduData.getCell(3).value = result.educationAssessment.offeredEducation;
     eduData.getCell(4).value = result.educationAssessment.score;
     eduData.getCell(5).value = result.educationAssessment.weight;
-    eduData.getCell(6).value = result.educationAssessment.finalScore;
+    eduData.getCell(6).value = { formula: `D${currentRow}*E${currentRow}` };
     ws.mergeCells(`G${currentRow}:I${currentRow}`);
     eduData.getCell(7).value = result.educationAssessment.aiRemark;
 
@@ -557,7 +560,7 @@ export default function App() {
     statusData.getCell(3).value = result.statusAssessment.employmentStatus;
     statusData.getCell(4).value = result.statusAssessment.score;
     statusData.getCell(5).value = result.statusAssessment.weight;
-    statusData.getCell(6).value = result.statusAssessment.finalScore;
+    statusData.getCell(6).value = { formula: `D${currentRow}*E${currentRow}` };
     ws.mergeCells(`G${currentRow}:I${currentRow}`);
     statusData.getCell(7).value = result.statusAssessment.aiRemark;
     statusData.eachCell((cell, col) => {
@@ -594,7 +597,7 @@ export default function App() {
     otherData.getCell(3).value = result.otherSubAssessment.evaluation;
     otherData.getCell(4).value = result.otherSubAssessment.score;
     otherData.getCell(5).value = result.otherSubAssessment.weight;
-    otherData.getCell(6).value = result.otherSubAssessment.finalScore;
+    otherData.getCell(6).value = { formula: `D${currentRow}*E${currentRow}` };
     ws.mergeCells(`G${currentRow}:I${currentRow}`);
     otherData.getCell(7).value = result.otherSubAssessment.aiRemark;
     otherData.eachCell((cell, col) => {
@@ -637,7 +640,7 @@ export default function App() {
         exp.scope,
         exp.position,
         exp.reference,
-        parseFloat(exp.total.toFixed(2)),
+        { formula: `D${currentRow}*E${currentRow}*F${currentRow}*G${currentRow}` },
         exp.aiRemark
       ];
       row.eachCell((cell, col) => {
@@ -682,7 +685,7 @@ export default function App() {
 
     const expPropRow = ws.getRow(currentRow);
     ws.mergeCells(`A${currentRow}:G${currentRow}`);
-    expPropRow.getCell(1).value = "HASIL PERHITUNGAN SECARA PROPORSIONAL ";
+    expPropRow.getCell(1).value = "NILAI PENGALAMAN KERJA PROFESIONAL TENAGA AHLI ";
     expPropRow.getCell(1).style = { ...bodyStyle, font: { ...bodyStyle.font, bold: true }, alignment: { horizontal: 'right' } };
     expPropRow.getCell(8).value = { formula: `IF(ISNUMBER(H${expReqRowIdx}), IF(H${expReqRowIdx}>0, IF(H${expYearRowIdx}>=H${expReqRowIdx}, 100, H${expYearRowIdx}/H${expReqRowIdx}*100), 0), "-")` };
     expPropRow.getCell(8).numFmt = '0.00';
@@ -732,7 +735,7 @@ export default function App() {
       row.getCell(2).value = item.name;
       row.getCell(5).value = item.score;
       row.getCell(6).value = item.bobot;
-      row.getCell(7).value = item.nilaiAkhir;
+      row.getCell(7).value = { formula: `E${currentRow}*F${currentRow}` };
       ws.mergeCells(`H${currentRow}:I${currentRow}`);
       const justificationCell = row.getCell(8);
       justificationCell.value = item.justification;
@@ -794,17 +797,17 @@ export default function App() {
   } as any);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans selection:bg-orange-100">
       {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-[#F4F4F0]/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm px-6 py-4">
+      <nav className="sticky top-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-orange-200/40 shadow-sm px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#808000]/10 rounded-lg border border-[#808000]/20">
-              <ShieldCheck className="w-6 h-6 text-[#808000]" />
+            <div className="p-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
+              <ShieldCheck className="w-6 h-6 text-orange-600" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-gray-900 leading-none">Evaluasi Kualifikasi Tenaga Ahli</h1>
-              <p className="text-[10px] text-[#808000] uppercase tracking-widest font-bold mt-1">Jasa Konsultansi Konstruksi</p>
+              <p className="text-[10px] text-orange-600 uppercase tracking-widest font-bold mt-1">Jasa Konsultansi Konstruksi</p>
             </div>
           </div>
         </div>
@@ -823,14 +826,14 @@ export default function App() {
           {/* Upload Card 1: Dokumen Seleksi */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-1">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">1</span>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">1</span>
               <h3 className="font-bold text-gray-800 uppercase text-xs tracking-wider">Dokumen Seleksi</h3>
             </div>
             <div 
               {...getSelProps()} 
               className={cn(
                 "group relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[300px]",
-                isSelActive ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-400 hover:bg-gray-50/50",
+                isSelActive ? "border-orange-500 bg-orange-50/50" : "border-gray-200 bg-white hover:border-orange-400 hover:bg-gray-50/50",
                 selectionDoc.file && "border-green-400 bg-green-50/10"
               )}
             >
@@ -853,8 +856,8 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-blue-100 transition-colors">
-                    <FileUp className="w-10 h-10 text-gray-400 group-hover:text-blue-500" />
+                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-orange-100 transition-colors">
+                    <FileUp className="w-10 h-10 text-gray-400 group-hover:text-orange-500" />
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">Upload Dokumen Seleksi (BAB VI)</p>
@@ -868,14 +871,14 @@ export default function App() {
           {/* Upload Card 2: Kerangka Acuan Kerja (KAK) */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-1">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">2</span>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">2</span>
               <h3 className="font-bold text-gray-800 uppercase text-xs tracking-wider">Kerangka Acuan Kerja (KAK)</h3>
             </div>
             <div 
               {...getKakProps()} 
               className={cn(
                 "group relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[300px]",
-                isKakActive ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-400 hover:bg-gray-50/50",
+                isKakActive ? "border-orange-500 bg-orange-50/50" : "border-gray-200 bg-white hover:border-orange-400 hover:bg-gray-50/50",
                 kakDoc.file && "border-green-400 bg-green-50/10"
               )}
             >
@@ -898,8 +901,8 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-blue-100 transition-colors">
-                    <FileText className="w-10 h-10 text-gray-400 group-hover:text-blue-500" />
+                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-orange-100 transition-colors">
+                    <FileText className="w-10 h-10 text-gray-400 group-hover:text-orange-500" />
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">Upload Dokumen KAK</p>
@@ -913,14 +916,14 @@ export default function App() {
           {/* Upload Card 3: Data Kualifikasi Tenaga Ahli */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-1">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">3</span>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">3</span>
               <h3 className="font-bold text-gray-800 uppercase text-xs tracking-wider">Data Kualifikasi Tenaga Ahli</h3>
             </div>
             <div 
               {...getQualProps()} 
               className={cn(
                 "group relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 min-h-[300px]",
-                isQualActive ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-400 hover:bg-gray-50/50",
+                isQualActive ? "border-orange-500 bg-orange-50/50" : "border-gray-200 bg-white hover:border-orange-400 hover:bg-gray-50/50",
                 qualificationDoc.file && "border-green-400 bg-green-50/10"
               )}
             >
@@ -943,8 +946,8 @@ export default function App() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-blue-100 transition-colors">
-                    <FileText className="w-10 h-10 text-gray-400 group-hover:text-blue-500" />
+                  <div className="p-4 bg-gray-100 rounded-2xl group-hover:bg-orange-100 transition-colors">
+                    <FileText className="w-10 h-10 text-gray-400 group-hover:text-orange-500" />
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">Upload Data Kualifikasi Tenaga Ahli</p>
@@ -975,10 +978,10 @@ export default function App() {
         <div className="mt-12 flex flex-col items-center justify-center gap-6">
           <button
             onClick={handleStartEvaluation}
-            disabled={isExtracting || isEvaluating || isCheckingPageCount}
+            disabled={isExtracting || isEvaluating || isCheckingPageCount || result !== null}
             className={cn(
-              "relative px-12 py-5 rounded-2xl font-black text-lg tracking-tight transition-all duration-300 shadow-xl shadow-blue-500/20 active:scale-95 group",
-              isExtracting || isEvaluating || isCheckingPageCount ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700 hover:-translate-y-1"
+              "relative px-12 py-5 rounded-2xl font-black text-lg tracking-tight transition-all duration-300 shadow-xl shadow-orange-500/20 active:scale-95 group",
+              (isExtracting || isEvaluating || isCheckingPageCount || result !== null) ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-orange-600 text-white hover:bg-orange-700 hover:-translate-y-1"
             )}
           >
             <div className="flex items-center gap-3">
@@ -996,6 +999,11 @@ export default function App() {
                       </span>
                     )}
                   </div>
+                </>
+              ) : result !== null ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  <span>Penilaian Selesai</span>
                 </>
               ) : (
                 <>
@@ -1045,7 +1053,7 @@ export default function App() {
                       />
                       <motion.circle 
                         cx="96" cy="96" r="88" 
-                        stroke="#2563EB" strokeWidth="16" fill="transparent"
+                        stroke="#EA580C" strokeWidth="16" fill="transparent"
                         strokeDasharray={552}
                         initial={{ strokeDashoffset: 552 }}
                         animate={{ strokeDashoffset: 552 - (552 * result.overallScore) / 60 }}
@@ -1060,9 +1068,9 @@ export default function App() {
                   
                   <div className="flex-1 space-y-6">
                     <div>
-                      <span className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-2 block">Hasil Analisis AI</span>
+                      <span className="text-xs font-bold text-orange-600 uppercase tracking-[0.2em] mb-2 block">Hasil Analisis AI</span>
                       <h3 className="text-3xl font-black text-gray-900 leading-tight">Nama Personil: {result.personnelName}</h3>
-                      <p className="text-lg font-bold text-blue-600 mt-1">Posisi: {result.proposedPosition}</p>
+                      <p className="text-lg font-bold text-orange-600 mt-1">Posisi: {result.proposedPosition}</p>
                       <p className="text-gray-500 mt-2 font-medium leading-relaxed">{result.summary}</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -1086,7 +1094,7 @@ export default function App() {
                 <div className="overflow-hidden bg-white border border-gray-200 rounded-3xl shadow-sm">
                   <table className="w-full text-left border-collapse font-sans">
                     <thead>
-                      <tr className="bg-blue-50/50 border-b border-gray-200">
+                      <tr className="bg-orange-50/50 border-b border-gray-200">
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-16">No</th>
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Persyaratan Pendidikan KAK</th>
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Pendidikan TA Ditawarkan</th>
@@ -1097,7 +1105,7 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="hover:bg-blue-50/20 transition-colors">
+                      <tr className="hover:bg-orange-50/20 transition-colors">
                         <td className="px-6 py-6 text-sm font-bold text-gray-400">{result.educationAssessment.no}</td>
                         <td className="px-6 py-6 font-bold text-gray-900 text-sm">{result.educationAssessment.kakRequirement}</td>
                         <td className="px-6 py-6 font-medium text-gray-700 text-sm">{result.educationAssessment.offeredEducation}</td>
@@ -1110,7 +1118,7 @@ export default function App() {
                           {(result.educationAssessment.weight * 100).toFixed(0)}%
                         </td>
                         <td className="px-6 py-6 text-center">
-                          <span className="inline-flex items-center justify-center w-12 h-10 rounded-lg bg-blue-50 text-blue-700 font-black border border-blue-100">
+                          <span className="inline-flex items-center justify-center w-12 h-10 rounded-lg bg-orange-50 text-orange-700 font-black border border-orange-100">
                             {result.educationAssessment.finalScore.toFixed(2)}
                           </span>
                         </td>
@@ -1135,7 +1143,7 @@ export default function App() {
                 <div className="overflow-hidden bg-white border border-gray-200 rounded-3xl shadow-sm">
                   <table className="w-full text-left border-collapse font-sans">
                     <thead>
-                      <tr className="bg-blue-50/50 border-b border-gray-200">
+                      <tr className="bg-orange-50/50 border-b border-gray-200">
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-16">No</th>
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Bukti Potong/Lapor Pajak PPh 21</th>
                         <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Status Tenaga Ahli</th>
@@ -1146,7 +1154,7 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="hover:bg-blue-50/20 transition-colors">
+                      <tr className="hover:bg-orange-50/20 transition-colors">
                         <td className="px-6 py-6 text-sm font-bold text-gray-400">{result.statusAssessment.no}</td>
                         <td className="px-6 py-6 font-bold text-gray-900 text-sm leading-tight">{result.statusAssessment.taxProof}</td>
                         <td className="px-6 py-6 font-medium text-gray-700 text-sm whitespace-nowrap">{result.statusAssessment.employmentStatus}</td>
@@ -1159,7 +1167,7 @@ export default function App() {
                           {(result.statusAssessment.weight * 100).toFixed(0)}%
                         </td>
                         <td className="px-6 py-6 text-center">
-                          <span className="inline-flex items-center justify-center w-12 h-10 rounded-lg bg-blue-50 text-blue-700 font-black border border-blue-100">
+                          <span className="inline-flex items-center justify-center w-12 h-10 rounded-lg bg-orange-50 text-orange-700 font-black border border-orange-100">
                             {result.statusAssessment.finalScore.toFixed(2)}
                           </span>
                         </td>
@@ -1240,7 +1248,7 @@ export default function App() {
                 <div className="overflow-hidden bg-white border border-gray-200 rounded-3xl shadow-sm overflow-x-auto">
                   <table className="w-full text-left border-collapse font-sans min-w-[1000px]">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
+                      <tr className="bg-orange-50/50 border-b border-gray-200">
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-12">No</th>
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Tgl Mulai</th>
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Tgl Selesai</th>
@@ -1248,13 +1256,13 @@ export default function App() {
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-16 text-center">Lingkup</th>
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-16 text-center">Posisi</th>
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-16 text-center">Referensi</th>
-                        <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-20 text-center font-bold text-blue-600">Jumlah</th>
+                        <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider w-20 text-center font-bold text-orange-600">Jumlah</th>
                         <th className="px-4 py-4 text-[10px] font-black uppercase text-gray-500 tracking-wider">Keterangan AI</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {result.experienceAssessment.map((exp, idx) => (
-                        <tr key={idx} className="hover:bg-blue-50/20 transition-colors">
+                        <tr key={idx} className="hover:bg-orange-50/20 transition-colors">
                           <td className="px-4 py-4 text-sm font-bold text-gray-400">{exp.no}</td>
                           <td className="px-4 py-4 text-sm font-medium text-gray-700">{formatIndonesianDate(exp.startDate)}</td>
                           <td className="px-4 py-4 text-sm font-medium text-gray-700">{formatIndonesianDate(exp.endDate)}</td>
@@ -1263,7 +1271,7 @@ export default function App() {
                           <td className="px-4 py-4 text-center text-sm font-bold text-gray-600">{exp.position}</td>
                           <td className="px-4 py-4 text-center text-sm font-bold text-gray-600">{exp.reference}</td>
                           <td className="px-4 py-4 text-center">
-                            <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-blue-50 text-blue-700 font-bold text-xs border border-blue-100">
+                            <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-orange-50 text-orange-700 font-bold text-xs border border-orange-100">
                               {exp.total.toFixed(2)}
                             </span>
                           </td>
@@ -1322,7 +1330,7 @@ export default function App() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.1 }}
-                          className="hover:bg-blue-50/30 transition-colors"
+                          className="hover:bg-orange-50/30 transition-colors"
                         >
                           <td className="px-6 py-6 text-sm font-bold text-gray-400">{item.no}</td>
                           <td className="px-6 py-6">
@@ -1339,7 +1347,7 @@ export default function App() {
                             </span>
                           </td>
                           <td className="px-6 py-6 text-center">
-                            <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 text-blue-700 text-lg font-black border border-blue-100">
+                            <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-orange-50 text-orange-700 text-lg font-black border border-orange-100">
                               {item.nilaiAkhir.toFixed(2)}
                             </span>
                           </td>
@@ -1357,11 +1365,11 @@ export default function App() {
                           {Math.round(result.criteriaScores.reduce((sum, item) => sum + (item.bobot * 100), 0))}%
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center justify-center w-14 h-11 rounded-lg bg-blue-600 text-white text-base font-black shadow-md shadow-blue-500/20">
+                          <span className="inline-flex items-center justify-center w-14 h-11 rounded-lg bg-orange-600 text-white text-base font-black shadow-md shadow-orange-500/20">
                             {result.overallScore.toFixed(2)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm font-black text-blue-700 leading-relaxed max-w-md">
+                        <td className="px-6 py-4 text-sm font-black text-orange-700 leading-relaxed max-w-md">
                           Nilai ini BELUM Dikalikan Bobot per Tenaga Ahli sesuai Dokumen Seleksi
                         </td>
                       </tr>
