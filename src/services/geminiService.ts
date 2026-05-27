@@ -54,8 +54,8 @@ function handleGeminiError(error: any): never {
   
   if (isQuotaExceededError(error)) {
     throw new Error(
-      "Batas kuota pemakaian model AI Gemini telah habis (Rate Limit / Quota Exceeded / Resource Exhausted).\n\n" +
-      "Silakan coba beberapa saat lagi atau upgrade untuk meningkatkan batas kuota."
+      "Batas pemakaian model AI Gemini telah habis.\n\n" +
+      "Silakan coba lagi setelah jam 14.00 WIB atau upgrade untuk meningkatkan kuota."
     );
   }
   
@@ -231,6 +231,12 @@ const mainPromptText = `
        - Keterangan AI: tuliskan nama paket pekerjaan dan Justifikasi mengenai penilaian lingkup dan posisi serta keberadaan bukti referensi.
     6. SKOR DISKRIT: Gunakan hanya skor (misal 100, 80, 50) yang tertulis di Bab VI.
     7. SYARAT KAK: Ekstrak jumlah tahun pengalaman minimum yang diminta (misal: 5 tahun).
+    8. TABEL REKAPITULASI (criteriaScores):
+       Anda WAJIB menghasilkan tepat 4 baris unsur penilaian dalam array ini:
+       - No. 1: "Tingkat dan Jurusan Pendidikan" (Skor & bobot dari unsur Pendidikan, isi justifikasi singkat secara komprehensif)
+       - No. 2: "Pengalaman Kerja Profesional" (Skor & bobot dari unsur Pengalaman Profesional, isi justifikasi singkat mengenai total tahun yang diperoleh dibandingkan dengan syarat KAK)
+       - No. 3: "Status Tenaga Ahli" (Skor & bobot dari unsur Status Tenaga Ahli, isi justifikasi singkat mengenai kesesuaian potongan pajak PPh 21)
+       - No. 4: "Subunsur lain-lain" (Skor & bobot dari unsur lain-lain, isi justifikasi singkat mengenai kelengkapan berkas penunjang)
 
     FORMAT OUTPUT (JSON):
     Sesuai skema respon.
@@ -421,7 +427,56 @@ export async function evaluateQualification(
       return { ...exp, total: recalculatedTotal };
     });
 
-    result.criteriaScores = result.criteriaScores.map(criterion => {
+    // Find custom/Gemini criteria scores for mapping
+    let eduItem = result.criteriaScores.find(item => 
+      /didik|education|ijazah/i.test(item.name)
+    );
+    let expItem = result.criteriaScores.find(item => 
+      /pengalaman|experience|profesional/i.test(item.name)
+    );
+    let statusItem = result.criteriaScores.find(item => 
+      /status|pajak|tax|kepegawaian/i.test(item.name)
+    );
+    let otherItem = result.criteriaScores.find(item => 
+      /lain|other/i.test(item.name)
+    );
+
+    const normalizedCriteriaScores: typeof result.criteriaScores = [
+      {
+        no: 1,
+        name: "Tingkat dan Jurusan Pendidikan",
+        score: eduItem ? eduItem.score : (result.educationAssessment?.score || 0),
+        bobot: eduItem ? eduItem.bobot : (result.educationAssessment?.weight || 0),
+        nilaiAkhir: 0,
+        justification: eduItem ? eduItem.justification : (result.educationAssessment?.aiRemark || "")
+      },
+      {
+        no: 2,
+        name: "Pengalaman Kerja Profesional",
+        score: expItem ? expItem.score : 0,
+        bobot: expItem ? expItem.bobot : 0,
+        nilaiAkhir: 0,
+        justification: expItem ? expItem.justification : "Hasil evaluasi pengalaman profesional tenaga ahli sesuai dengan kualifikasi."
+      },
+      {
+        no: 3,
+        name: "Status Tenaga Ahli",
+        score: statusItem ? statusItem.score : (result.statusAssessment?.score || 0),
+        bobot: statusItem ? statusItem.bobot : (result.statusAssessment?.weight || 0),
+        nilaiAkhir: 0,
+        justification: statusItem ? statusItem.justification : (result.statusAssessment?.aiRemark || "")
+      },
+      {
+        no: 4,
+        name: "Subunsur lain-lain",
+        score: otherItem ? otherItem.score : (result.otherSubAssessment?.score || 0),
+        bobot: otherItem ? otherItem.bobot : (result.otherSubAssessment?.weight || 0),
+        nilaiAkhir: 0,
+        justification: otherItem ? otherItem.justification : (result.otherSubAssessment?.aiRemark || "")
+      }
+    ];
+
+    result.criteriaScores = normalizedCriteriaScores.map(criterion => {
       let b = criterion.bobot;
       if (b > 1) {
         b = b / 100;
