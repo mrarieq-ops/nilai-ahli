@@ -122,8 +122,8 @@ export default function App() {
         const pageCount = await getPdfPageCount(file);
         setIsCheckingPageCount(false);
 
-        if (pageCount > 75) {
-          setError(`File "${file.name}" memiliki ${pageCount} halaman. Batas maksimal adalah 75 halaman per tenaga ahli.`);
+        if (pageCount > 105) {
+          setError(`File "${file.name}" memiliki ${pageCount} halaman. Batas maksimal adalah 105 halaman per tenaga ahli.`);
           return;
         }
 
